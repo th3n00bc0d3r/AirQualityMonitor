@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>ESP32 Web Server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <script src="/jquery.min.js"></script>  
+  <script src="/qrcode.min.js"></script>
+
+  <link rel="stylesheet" href="/mini-default.min.css">
+  <link rel="stylesheet" href="/style.css">
+
+  <!-- INVALIDATE FAVICON -->
+  <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+
+</head>
+
+<body>
+
+  <div class="overlay">
+    <div class="content">
+      <div class="spinner primary"></div>
+      <div>Please Wait...</div>
+    </div>
+  </div>
+
+<!-- 
+  <div id="spinner show">
+    <h2>Spinner</h2>
+  </div>
+   -->
+
+
+
+  <div class="container">
+    <div class="row">
+
+      <div class="col-sm-12">
+        <div class="logo">
+          <img src="logo.png" alt="BreatheIO Logo" />
+        </div>
+      </div>
+
+      <div class="col-sm-12">
+        <!-- SETUP: START SCANNING -->
+        <div class="card setup_1">
+          <h2>Air Quality Monitor Setup</h2>
+
+          <p>Welcome to BreatheIO, Air Quality Monitoring Setup, the first step is for the device to connect to your
+            WiFi. Click the following button to start scanning WiFi`s in your area</p>
+
+          <button id="btnStartScan" class="tertiary">Start Scanning</button>
+          
+
+        </div>
+
+        <!-- SETUP 2: LIST WIFIs -->
+        <div class="card setup_2 hidden">
+
+          <!-- SHOW WIFIs -->
+          <div class="wifis hidden">          
+            <h2>WiFi Found: 5</h2>
+            <span>Select WiFi to Connect</span>
+            <ul class="wifiList"></ul>
+
+            <div class="rescanbutton">
+              <button id="rescan" class="primary">Rescan</button>
+            </div>
+          </div>
+
+          <!-- WIFI PASSWORD -->
+          <div class="wifi_password hidden">
+            <div class="label">Enter Password for <span id="wifi_name"></span></div>
+            <input type="password" id="password" placeholder="Password"/>
+            <button id="connect" class="primary">Connect</button>
+            <button id="goBack" class="secondary">Go Back</button>
+          </div>
+
+
+        </div>
+
+      </div>
+
+
+    </div>
+  </div>
+
+  <script>
+    //var API = "http://192.168.1.137";
+    var API = "";
+
+    //JSON to Store Wifi
+    var wifiList = {};
+
+    var selectedWifiNetwork = "";
+
+    //Connect
+    $("#connect").click(() => {
+      showSpinner();
+
+      $.ajax({
+        url: API + "/connect",
+        type: "PUT",
+        dataType: "JSON",
+        //contentType: 'application/json',
+        crossDomain: true,
+        headers: {
+            "accept": "application/json",
+            "Access-Control-Allow-Origin":"*"
+        },
+        timeout: 5000,
+        data: jQuery.param({ ssid: selectedWifiNetwork, password : $("#password").val()}),
+        success: (data) => {
+          //hideSpinner();
+          //console.log(data);
+        },
+        complete: (data) => {
+          console.log("Completed");
+
+          //Check Connectivity Every 5 Seconds
+          var internetCheck = setInterval(() => {
+            console.log("Checking Internet");
+            $.ajax({
+              url: API + "/check",
+              type: "GET",
+              dataType: "JSON",
+              success: (data) => {         
+                hideSpinner();       
+                console.log("Got IP");
+                console.log(data);
+                clearInterval(internetCheck);
+
+
+              }
+            });
+          }, 5000);
+        }
+      });
+    });
+
+    //Go Back Button
+    $("#goBack").click(() => {
+      $(".wifi_password").addClass("hidden");      
+      $(".wifis").slideDown();
+    });
+
+    //Rescan
+    $("#rescan").click(() => {
+      showSpinner();
+
+      $.ajax({
+        url: API + "/scan",
+        type: "GET",
+        success: (data) => {
+          if (!data.success) {
+            hideSpinner();
+            console.log("Error");
+            return;
+          }
+
+          setTimeout(() => {
+            fetchWifiResults();
+          }, 5000);
+        }
+      });
+    });
+    
+
+    //On Select Wifi Network
+    $(".wifiList").on("click", "li a.listed-wifi", (e) => {
+      e.preventDefault();      
+      console.log(e.target.id);
+
+      $("#wifi_name").html(e.target.id);
+      selectedWifiNetwork = e.target.id;
+
+      $(".wifis").slideUp();
+      $(".wifi_password").removeClass("hidden");
+    });
+
+    //Scan Wifis
+    $("#btnStartScan").click(() => {
+      $(".setup_1").slideUp('slow');
+
+      //Recieve Wifi List
+      fetchWifiResults();
+    });
+
+    //Fetch Wifi Results
+    function fetchWifiResults() {
+      showSpinner();
+      $.ajax({
+        url: API + "/results",
+        type: "GET",
+        dataType: "JSON",
+        success: (data) => {
+          console.log(data.networks);
+          hideSpinner();
+          if (!data.success) {
+            console.log("Error");
+            return;
+          }
+
+          //Populate Wifi
+          $(".wifiList").empty();
+          var wifiListSelector = $(".wifiList");
+          $.each(data.networks, (i) => {
+              //console.log(wifiList.data[i]);
+              var li = $('<li/>')
+                  //.addClass('')
+                  .appendTo(wifiListSelector);
+              var aaa = $('<a/>')
+                  .addClass('listed-wifi')
+                  .attr('id', data.networks[i].ssid)
+                  .attr('href', '#')
+                  .text(data.networks[i].ssid)
+                  .appendTo(li);      
+          });          
+
+          $(".setup_2").removeClass("hidden");
+          $(".wifis").removeClass("hidden");
+
+        }
+      });      
+    }
+
+    /* UTITLITIES */
+    // (A) SHOW & HIDE SPINNER
+    function showSpinner() {      
+      $(".overlay").addClass("show");
+    }
+
+    function hideSpinner() {
+      $(".overlay").removeClass("show");      
+    }    
+  </script>
+
+
+
+</body>
+
+</html>
+
+  <!-- 
+  <div id="qrcode" class="qrcode"></div>
+  <script type="text/javascript">
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+      text: "http://jindo.dev.naver.com/collie",
+      colorDark : "#000000",
+      colorLight : "#ffffff",
+      correctLevel : QRCode.CorrectLevel.H
+    });
+    </script>
+      -->
+
+<!-- 
+    /*
+    //JSOn to Store Wifi
+    var wifiList = {
+      success: true,
+      data: [
+        { ssid: "Test 1", signalStrenth: -71 },
+        { ssid: "Test 2", signalStrenth: -45 },
+        { ssid: "Test 3", signalStrenth: -50 },
+        { ssid: "Test 4", signalStrenth: -20 },
+      ]
+    }
+    
+    //Populate Wifi
+    var wifiListSelector = $(".wifiList");
+    $.each(wifiList.data, (i) => {
+        //console.log(wifiList.data[i]);
+        var li = $('<li/>')
+            //.addClass('')
+            .appendTo(wifiListSelector);
+        var aaa = $('<a/>')
+            .addClass('listed-wifi')
+            .attr('id', wifiList.data[i].ssid)
+            .attr('href', '#')
+            .text(wifiList.data[i].ssid)
+            .appendTo(li);      
+    });
+    */
+
+ -->

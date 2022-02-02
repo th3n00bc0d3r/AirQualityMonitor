@@ -1,0 +1,133 @@
+body {
+    background-color: #3badd6;
+}
+
+/* LOGO */
+.logo {
+    width: 200px;
+    margin: 0 auto;
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+@media (max-width:481px) {
+    .logo {
+        width: 70%;
+    }
+}
+
+.logo img {
+    width: 100%;
+}
+
+.card {
+    margin: 0 auto;
+}
+
+/* START WIFI  */
+.setup_1 {
+    margin-top: 20px;
+    text-align: center;
+}
+
+h2 {
+    color: grey;
+    font-size: 18px;
+}
+
+/* SETUP 2: WIFI FOUND */
+.setup_2 {
+    text-align: center;
+}
+.setup_2 h2 {
+    text-align: center;
+}
+
+.wifis {
+}
+
+.rescanbutton {
+    margin-right: 15px;
+}
+
+.wifis span {    
+    color: rgb(215, 145, 75);
+}
+
+/* WIFI LIST */
+.wifiList {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
+.wifiList li {
+    text-align: center;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    border: 2px dashed grey;
+    padding: 5px;
+}
+
+.wifiList li a {
+    font-size: 20px;    
+}
+
+/* WIFI PASSWORD */
+.wifi_password {
+    padding-right: 15px;
+}
+.wifi_password .label {
+    text-align: center;
+    margin-top: 10px;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: grey;
+}
+.wifi_password input, .wifi_password button, .wifis button {
+    width: 100%;    
+}
+
+
+
+
+/* QRCODE */
+
+.qrcode {
+    margin: 20px;
+}
+
+.qrcode img {
+    width: 100%;
+    height: 300px;
+}
+
+/* SPINNER */
+.overlay {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5) center center no-repeat;
+    z-index: 9999;
+    visibility: hidden;
+}
+
+.content {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%);
+    opacity: 1;
+    z-index: 99999;
+    text-align: center;
+    color: white;;
+}
+
+.show {
+    visibility: visible;
+    opacity: 1;
+}
+
